@@ -2,6 +2,7 @@ const { Router } = require("express")
 const router = Router()
 const userController = require("../controllers/userControllers")
 
+// CRUD básico
 router.get("/", userController.obtenerUsers)
 router.get("/:id", userController.obtenerUser)
 router.post("/", userController.crearUser)
