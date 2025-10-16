@@ -1,6 +1,31 @@
-const { Comment } = require("../../db/models")
+const {Comment} = require("../../db/models")
+const { Op } = require("sequelize");
+const VISIBLE_COMMENTS_MONTHS = process.env.VISIBLE_COMMENTS_MONTHS || 3
+
+const actualizarVisibilidadComentarios = async () => {
+  const limiteFecha = new Date();
+  limiteFecha.setMonth(
+    limiteFecha.getMonth() - Number(VISIBLE_COMMENTS_MONTHS)
+  )
+    await Comment.update({ visible: false },{
+        where: {
+            createdAt: {
+                [Op.lt]: limiteFecha,
+            }
+        }
+    })
+
+    await Comment.update({ visible: true },{
+        where: {
+            createdAt: {
+                [Op.gte]: limiteFecha,
+            }
+        }
+    })
+}
 
 const obtenerComments = async (req,res) => {
+    await actualizarVisibilidadComentarios()
     const comments = await Comment.findAll()
     res.status(200).json(comments)
 }
@@ -51,5 +76,6 @@ module.exports = {
     obtenerComment,
     crearComment,
     actualizarComment,
-    eliminarComment
+    eliminarComment,
+    actualizarVisibilidadComentarios
 }
