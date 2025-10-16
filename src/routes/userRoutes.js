@@ -5,8 +5,8 @@ const userController = require("../controllers/userControllers")
 router.get("/", userController.obtenerUsers)
 router.get("/:id", userController.obtenerUser)
 router.post("/", userController.crearUser)
-//router.put("/:id")
-//router.delete("/:id")
+router.put("/:id", userController.actualizarUser)
+router.delete("/:id", userController.eliminarUser)
 
 
 

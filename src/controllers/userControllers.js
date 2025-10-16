@@ -27,9 +27,35 @@ const crearUser = async (req,res) => {
     }
 }
 
+const actualizarUser = async (req, res) => {
+    try {
+        const id = req.params.id
+        const { nickName } = req.body
+        const usuario = await User.findByPk(id)
+        await usuario.update({
+            nickName
+        })
+        res.status(201).json(usuario)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const eliminarUser = async (req,res) => {
+    try {
+        const id = req.params.id
+        const user = await User.findByPk(id)
+        await user.destroy()
+        res.status(200).json({message: "Usuario eliminado correctamente"})
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
 
 module. exports = {
     obtenerUsers,
     obtenerUser,
-    crearUser
+    crearUser,
+    actualizarUser,
+    eliminarUser
 }

@@ -5,9 +5,17 @@ const db = require("../db/models")
 const PORT = process.env.PORT || 3000
 
 const userRouter = require("./routes/userRoutes")
+const postRouter = require("./routes/postRoutes")
+const imagesRouter = require("./routes/post_imagesRoutes")
+const commentRouter = require("./routes/commentRoutes")
+const tagRouter = require("./routes/tagRoutes")
 
 app.use(express.json())
 app.use("/users", userRouter)
+app.use("/posts", postRouter)
+app.use("/images", imagesRouter)
+app.use("/comments", commentRouter)
+app.use("/tags", tagRouter)
 
 app.listen(PORT, async () => {
     await db.sequelize.sync()
