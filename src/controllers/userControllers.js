@@ -1,4 +1,4 @@
-const { User } = require("../../db/models")
+const { User, Post } = require("../../db/models")
 
 const obtenerUsers = async (req,res) => {
     const usuarios = await User.findAll()
@@ -52,10 +52,41 @@ const eliminarUser = async (req,res) => {
     }
 }
 
+const crearPostDeUser = async (req,res) => {
+    try {
+        const userId = req.params.userId
+        const {descripcion} = req.body
+        const post = await Post.create({
+            descripcion,
+            userId
+        })
+        res.status(201).json(post)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const obtenerPostsDeUser = async (req,res) => {
+    try {
+        const userId = req.params.userId
+        const userPosts = await Post.findAll({
+            where: {
+                userId
+            },
+            attributes:["id","descripcion", "createdAt"],
+        })
+        res.status(200).json(userPosts)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
 module. exports = {
     obtenerUsers,
     obtenerUser,
     crearUser,
     actualizarUser,
-    eliminarUser
+    eliminarUser,
+    crearPostDeUser,
+    obtenerPostsDeUser
 }

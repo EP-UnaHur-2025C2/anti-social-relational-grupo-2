@@ -10,7 +10,23 @@ router.get("/:id", validarIdParams("id"), validarUserExistente("id"), userContro
 router.post("/", validarUserBody, validarNickNameUnico, userController.crearUser)
 router.put("/:id", validarIdParams("id"), validarUserBody, validarUserExistente("id"), userController.actualizarUser)
 router.delete("/:id",validarIdParams("id"), validarUserExistente("id"), userController.eliminarUser)
+const {validarPostBody, validarPostExistente} = require("../middlewares/postMiddleware")
 
+// Asociaciones
+
+// Posts de user
+router.post("/:userId/posts",
+    validarIdParams("userId"), 
+    validarUserExistente("userId"), 
+    validarPostBody, 
+    userController.crearPostDeUser
+)
+
+router.get("/:userId/posts", 
+    validarIdParams("userId"), 
+    validarUserExistente("userId"), 
+    userController.obtenerPostsDeUser
+)
 
 
 module.exports = router
