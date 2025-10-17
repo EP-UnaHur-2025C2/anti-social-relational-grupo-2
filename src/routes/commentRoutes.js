@@ -1,13 +1,14 @@
 const { Router } = require("express")
 const router = Router()
 const commentController = require("../controllers/commentControllers")
+const {validarIdParams} = require("../middlewares/genericMiddleware")
+const {validarCommentExiste, validarBodyComment} = require("../middlewares/commentMiddleware")
 
 // CRUD básico
 router.get("/", commentController.obtenerComments)
-router.get("/:id", commentController.obtenerComment)
-router.post("/", commentController.crearComment)
-router.put("/:id", commentController.actualizarComment)
-router.delete("/:id", commentController.eliminarComment)
-
+router.get("/:id", validarIdParams("id"), validarCommentExiste("id"), commentController.obtenerComment)
+router.post("/", validarBodyComment, commentController.crearComment)
+router.put("/:id", validarIdParams("id"), validarBodyComment, validarCommentExiste("id"), commentController.actualizarComment)
+router.delete("/:id", validarIdParams("id"), validarCommentExiste("id"), commentController.eliminarComment)
 
 module.exports = router
