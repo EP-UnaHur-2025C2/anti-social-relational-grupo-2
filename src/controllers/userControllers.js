@@ -81,6 +81,67 @@ const obtenerPostsDeUser = async (req,res) => {
     }
 }
 
+const obtenerPostDeUser = async (req,res) => {
+    try {
+        const userId = req.params.userId
+        const postId = req.params.postId
+        await actualizarVisibilidadComentarios()
+        const userPost = await Post.findOne({
+            where: {
+                id : postId,
+                userId : userId
+            },
+            attributes:["id","descripcion", "createdAt"],
+            include: [
+                {
+                    model: Comment,
+                    attributes: ["texto", "createdAt"],
+                    where:{
+                        visible: true,
+                        userId,
+                        postId
+                    },
+                    required: false,
+                    limit: 3
+                },
+                {
+                    model: Post_Images,
+                    attributes:["url"],
+                    where: {
+                        postId
+                    },
+                    required: false
+                },
+                {
+                    model: Tag,
+                    attributes: ["nombre"],
+                    through: { attributes: [] },
+                    required: false
+                }
+            ]
+        })
+        res.status(200).json(userPost)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const eliminarPostDeUser = async (req,res) => {
+    try {
+        const userId = req.params.userId
+        const postId = req.params.postId
+        const userPost = await Post.findOne({
+            where: {
+                id : postId,
+                userId : userId
+            }
+        })
+        await userPost.destroy()
+        res.status(200).json({message: "Usuario eliminado correctamente"})
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
 module. exports = {
     obtenerUsers,
     obtenerUser,
@@ -88,5 +149,7 @@ module. exports = {
     actualizarUser,
     eliminarUser,
     crearPostDeUser,
-    obtenerPostsDeUser
+    obtenerPostsDeUser,
+    obtenerPostDeUser,
+    eliminarPostDeUser
 }

@@ -3,6 +3,8 @@ const router = Router()
 const userController = require("../controllers/userControllers")
 const {validarIdParams} = require("../middlewares/genericMiddleware")
 const {validarUserExistente, validarUserBody, validarNickNameUnico} = require("../middlewares/userMiddleware")
+const {validarPostBody, validarPostExistente} = require("../middlewares/postMiddleware")
+const validarPostPerteneceAUser = require("../middlewares/user-postMiddleware")
 
 // CRUD básico
 router.get("/", userController.obtenerUsers)
@@ -10,7 +12,6 @@ router.get("/:id", validarIdParams("id"), validarUserExistente("id"), userContro
 router.post("/", validarUserBody, validarNickNameUnico, userController.crearUser)
 router.put("/:id", validarIdParams("id"), validarUserBody, validarUserExistente("id"), userController.actualizarUser)
 router.delete("/:id",validarIdParams("id"), validarUserExistente("id"), userController.eliminarUser)
-const {validarPostBody, validarPostExistente} = require("../middlewares/postMiddleware")
 
 // Asociaciones
 
@@ -28,5 +29,21 @@ router.get("/:userId/posts",
     userController.obtenerPostsDeUser
 )
 
+// Post en específico
+router.get("/:userId/posts/:postId",
+    validarIdParams("userId"),
+    validarIdParams("postId"),
+    validarUserExistente("userId"),
+    validarPostExistente("postId"),
+    validarPostPerteneceAUser,
+    userController.obtenerPostDeUser)
+
+router.delete("/:userId/posts/:postId",
+    validarIdParams("userId"),
+    validarIdParams("postId"),
+    validarUserExistente("userId"),
+    validarPostExistente("postId"),
+    validarPostPerteneceAUser,
+    userController.eliminarPostDeUser)
 
 module.exports = router
