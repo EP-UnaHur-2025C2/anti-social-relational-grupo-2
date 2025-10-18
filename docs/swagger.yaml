@@ -1,0 +1,11 @@
+openapi: 3.0.0
+info:
+  title: UnaHur Anti-Social Net
+  version: "1.0.0"
+paths:
+  /:
+    get:
+      summary: Ruta de prueba
+      responses:
+        "200":
+          description: prueba
