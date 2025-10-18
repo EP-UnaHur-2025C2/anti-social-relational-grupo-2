@@ -1,4 +1,4 @@
-const { Post } = require("../../db/models")
+const { Post , Post_Images , Tag } = require("../../db/models")
 
 const obtenerPosts = async (req,res) => {
     const post = await Post.findAll()
@@ -91,6 +91,50 @@ const eliminarImageDePost = async (req,res) => {
     }  
 }
 
+const obtenerTagsDeUnPost = async (req,res) => {
+    try {
+        const postId = req.params.postId
+        const post = await Post.findByPk(postId, {
+            attributes:["id","descripcion", "createdAt"],
+            include: [
+                {
+                    model: Tag,
+                    attributes: ["nombre"],
+                    through: { attributes: [] }
+                }
+            ]
+        })
+        res.status(200).json(post)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const asociarTagAPost = async (req,res) => {
+    try {
+        const postId = req.params.postId
+        const {tagId} = req.body
+        const post = await Post.findByPk(postId)
+        await post.addTag(tagId)
+        res.status(201).json({ message: `Tag ${tagId} asociada al post ${postId}` })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const eliminarTagDePost = async (req,res) => {
+    try {
+        const postId = req.params.postId
+        const tagId = req.params.tagId
+        const post = await Post.findByPk(postId)
+        await post.removeTag(tagId)
+        res.status(200).json({ message: `Tag ${tagId} desasociado del post ${postId} correctamente` })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+
 module.exports = {
     obtenerPosts,
     obtenerPost,
@@ -100,4 +144,7 @@ module.exports = {
     obtenerImagesDePost,
     crearImageDePost,
     eliminarImageDePost,
-}    
+    obtenerTagsDeUnPost,
+    asociarTagAPost,
+    eliminarTagDePost
+}

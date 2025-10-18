@@ -6,6 +6,8 @@ const {validarPostExistente, validarPostBody} = require("../middlewares/postMidd
 const {validarExisteUserIdBody} = require("../middlewares/userMiddleware")
 const {validarBodyImage, validarImageExistente} = require("../middlewares/post_imagesMiddleware")
 const validarImagePerteneceAPost = require("../middlewares/post-post_ImageMiddleware")
+const {validarTagIdEnBody, validarTagExistente, validarIdBodyTag} = require("../middlewares/tagMiddleware")
+const validarTagAsociadoAPost = require("../middlewares/post-tagMiddleware")
 
 // CRUD básico
 router.get("/", postController.obtenerPosts)
@@ -34,5 +36,23 @@ router.delete("/:postId/images/:imageId",
     validarImagePerteneceAPost,
     postController.eliminarImageDePost)
 
+// Post y Tag
+router.get("/:postId/tags",
+    validarIdParams("postId"),
+    validarPostExistente("postId"),
+    postController.obtenerTagsDeUnPost)
+router.post("/:postId/tags", 
+    validarIdParams("postId"),
+    validarPostExistente("postId"),
+    validarIdBodyTag,
+    validarTagIdEnBody,
+    postController.asociarTagAPost) 
+router.delete("/:postId/tags/:tagId",
+    validarIdParams("postId"),
+    validarIdParams("tagId"),
+    validarPostExistente("postId"),
+    validarTagExistente("tagId"),
+    validarTagAsociadoAPost,
+    postController.eliminarTagDePost)
 
 module.exports = router
