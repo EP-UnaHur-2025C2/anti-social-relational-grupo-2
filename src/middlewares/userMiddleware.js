@@ -1,8 +1,10 @@
 const {User} = require("../../db/models")
-const {validarId, validarBodyGenerico, validarCampoUnico} = require("./genericMiddleware")
+const {validarBodyGenerico, validarCampoUnico, validarExistencia} = require("./genericMiddleware")
 const bodyUserSchema = require("../schemas/userSchema")
 
-const validarUserExistente = (data) => validarId(User, data)
+const validarUserExistente = (data) => validarExistencia(User, "params", data)
+
+const validarExisteUserIdBody = validarExistencia(User, "body", "userId")
 
 const validarUserBody = validarBodyGenerico(bodyUserSchema)
 
@@ -11,5 +13,6 @@ const validarNickNameUnico = validarCampoUnico(User, "nickName")
 module.exports = {
     validarUserExistente,
     validarUserBody,
-    validarNickNameUnico
+    validarNickNameUnico,
+    validarExisteUserIdBody
 }

@@ -1,8 +1,8 @@
 const {Comment} = require("../../db/models")
-const {validarId, validarBodyGenerico} = require("./genericMiddleware")
+const {validarBodyGenerico, validarExistencia} = require("./genericMiddleware")
 const bodyCommentSchema = require("../schemas/commentSchema")
 
-const validarCommentExiste = (data) => validarId(Comment, data)
+const validarCommentExiste = (data) => validarExistencia(Comment, "params", data)
 
 const validarBodyComment = validarBodyGenerico(bodyCommentSchema)
 

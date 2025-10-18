@@ -1,8 +1,8 @@
 const {Post_Images} = require("../../db/models")
-const {validarId, validarBodyGenerico, validarCampoUnico} = require("./genericMiddleware")
+const {validarBodyGenerico, validarCampoUnico, validarExistencia} = require("./genericMiddleware")
 const bodyImageSchema = require("../schemas/post_imagesSchema")
 
-const validarImageExistente = (data) => validarId(Post_Images, data)
+const validarImageExistente = (data) => validarExistencia(Post_Images, "params", data)
 
 const validarBodyImage = validarBodyGenerico(bodyImageSchema)
 

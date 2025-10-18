@@ -28,11 +28,12 @@ const validarBodyGenerico = (schema) => (req,res,next) => {
     next()
 }
 
-const validarId = (modelo, data) => {
-  return async (req,res,next) => { 
-    const respuesta = await modelo.findByPk(req.params[data])
-    if (!respuesta){
-      return res.status(404).json(`El ${modelo.name} ${req.params[data]} no existe`)
+const validarExistencia = (modelo, ubicacion, data) => {
+  return async (req, res, next) => {
+    const valor = req[ubicacion][data]
+    const respuesta = await modelo.findByPk(valor)
+    if (!respuesta) {
+      return res.status(404).json({ message: `El ${modelo.name} ${valor} no existe`})
     }
     next()
   }
@@ -46,7 +47,7 @@ const validarCampoUnico = (modelo, data) => {
         }
     })
     if(user){
-        return res.status(404).json(`El ${modelo.name} ${req.body[data]} ya existe`)
+        return res.status(404).json({ message: `El ${modelo.name} ${req.body[data]} ya existe`})
     }
     next()
   }
@@ -54,8 +55,8 @@ const validarCampoUnico = (modelo, data) => {
 
 module.exports = {
     validarIdParams,
-    validarId,
     errorMapper,
     validarCampoUnico,
-    validarBodyGenerico
+    validarBodyGenerico,
+    validarExistencia
 }
