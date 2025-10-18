@@ -4,6 +4,7 @@ const userController = require("../controllers/userControllers")
 const {validarIdParams} = require("../middlewares/genericMiddleware")
 const {validarUserExistente, validarUserBody, validarNickNameUnico} = require("../middlewares/userMiddleware")
 const {validarPostBody, validarPostExistente} = require("../middlewares/postMiddleware")
+const {validarBodyComment} = require("../middlewares/commentMiddleware")
 const validarPostPerteneceAUser = require("../middlewares/user-postMiddleware")
 
 // CRUD básico
@@ -46,4 +47,21 @@ router.delete("/:userId/posts/:postId",
     validarPostPerteneceAUser,
     userController.eliminarPostDeUser)
 
+// Comentarios de un post
+router.post("/:userId/posts/:postId/comments",
+    validarIdParams("userId"),
+    validarIdParams("postId"),
+    validarUserExistente("userId"),
+    validarPostExistente("postId"),
+    validarPostPerteneceAUser,
+    validarBodyComment,
+    userController.crearCommentDePostDeUser) 
+router.get("/:userId/posts/:postId/comments",
+    validarIdParams("userId"),
+    validarIdParams("postId"),
+    validarUserExistente("userId"),
+    validarPostExistente("postId"),
+    validarPostPerteneceAUser,
+    userController.obtenerCommentsDePostDeUser)
+    
 module.exports = router
