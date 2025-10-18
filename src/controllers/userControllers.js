@@ -142,6 +142,41 @@ const eliminarPostDeUser = async (req,res) => {
         res.status(500).json({ message: error.message })
     }
 }
+
+const crearCommentDePostDeUser = async (req,res) => {
+    try {
+        const userId = req.params.userId
+        const postId = req.params.postId   
+        const comment = await Comment.create({
+            ...req.body,
+            userId,
+            postId
+        })
+        res.status(201).json(comment)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const obtenerCommentsDePostDeUser = async (req,res) => {
+    try {
+        const userId = req.params.userId
+        const postId = req.params.postId
+        await actualizarVisibilidadComentarios()
+        const comments = await Comment.findAll({
+            where:{
+                visible: true,
+                userId,
+                postId
+            },
+            attributes: ["texto", "createdAt"]
+        })
+        res.status(200).json(comments)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
 module. exports = {
     obtenerUsers,
     obtenerUser,
@@ -151,5 +186,7 @@ module. exports = {
     crearPostDeUser,
     obtenerPostsDeUser,
     obtenerPostDeUser,
-    eliminarPostDeUser
+    eliminarPostDeUser,
+    crearCommentDePostDeUser,
+    obtenerCommentsDePostDeUser
 }
