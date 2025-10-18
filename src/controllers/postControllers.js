@@ -46,10 +46,58 @@ const eliminarPost = async (req,res) => {
     }
 }
 
+const obtenerImagesDePost = async (req,res) => {
+    try {
+        const postId = req.params.postId
+        const postImage = await Post_Images.findAll({
+            where: {
+                postId
+            },
+            attributes: ["url"]
+        })
+        res.status(200).json(postImage)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const crearImageDePost = async (req,res) => {
+    try {
+        const postId = req.params.postId
+        const image = await Post_Images.create({
+            ...req.body,
+            postId
+        })
+        res.status(201).json(image)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }  
+}
+
+const eliminarImageDePost = async (req,res) => {
+    try {
+        const postId = req.params.postId
+        const imageId = req.params.imageId
+        const image = await Post_Images.findOne({
+            where: {
+                id: imageId,
+                postId: postId
+            }
+        })
+        await image.destroy()
+        res.status(200).json({message: "La imagen fue borrada con exito"})
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }  
+}
+
 module.exports = {
     obtenerPosts,
     obtenerPost,
     crearPost,
     actualizarPost,
-    eliminarPost
+    eliminarPost,
+    obtenerImagesDePost,
+    crearImageDePost,
+    eliminarImageDePost,
 }    
