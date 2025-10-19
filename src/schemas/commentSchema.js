@@ -1,7 +1,7 @@
 const Joi = require("joi")
 
 const bodyCommentSchema = Joi.object({
-    texto: Joi.string().required().trim().max(20).min(3).messages({
+    texto: Joi.string().required().trim().max(30).min(3).messages({
             "string.base" : "El texto debe ser un cadena de texto.",
             "any.required" : "El campo descripción es obligatorio.",
             "string.empty" : "El texto no puede estar vacío.",

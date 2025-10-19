@@ -1,7 +1,7 @@
 const Joi = require("joi")
 
 const bodyTagSchema = Joi.object({
-    nombre: Joi.string().required().trim().max(15).messages({
+    nombre: Joi.string().required().trim().max(20).messages({
             "string.base" : "La etiqueta debe ser un cadena de texto.",
             "any.required" : "La etiqueta es obligatoria.",
             "string.empty" : "La etiqueta no puede estar vacía.",
