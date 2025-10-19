@@ -1,4 +1,5 @@
-const { User, Post } = require("../../db/models")
+const { User, Post, Comment, Post_Images, Tag } = require("../../db/models")
+const {actualizarVisibilidadComentarios} = require("./commentControllers")
 
 const obtenerUsers = async (req,res) => {
     const usuarios = await User.findAll()
@@ -177,7 +178,89 @@ const obtenerCommentsDePostDeUser = async (req,res) => {
     }
 }
 
-module. exports = {
+// Bonus
+
+const obtenerSeguidoresDeUser = async (req,res) => {
+    try {
+        id = req.params.id
+        const user = await User.findByPk(id, {
+              include: {
+                model: User,
+                as: 'seguidores',
+                attributes: ['nickName'],
+                through: { attributes: [] }
+            }
+        })
+        res.status(200).json(user.seguidores)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const obtenerSeguidosDeUser = async (req,res) => {
+    try {
+        id = req.params.id
+        const user = await User.findByPk(id, {
+              include: {
+                model: User,
+                as: 'seguidos',
+                attributes: ['nickName'],
+                through: { attributes: [] }
+            }
+        })
+        res.status(200).json(user.seguidos)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const seguirUser = async (req,res) => {
+    try {
+        const {idSeguidor, idSeguido} = req.params
+        const userSeguidor = await User.findByPk(idSeguidor)
+        const userSeguido = await User.findByPk(idSeguido)
+        await userSeguidor.addSeguido(userSeguido)
+        res.status(201).json({message: `${userSeguidor.nickName} siguió a ${userSeguido.nickName}`})
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const dejarDeSeguirUser = async (req,res) => {
+    try {
+        const {idSeguidor, idSeguido} = req.params
+        const userSeguidor = await User.findByPk(idSeguidor)
+        const userSeguido = await User.findByPk(idSeguido)
+        await userSeguidor.removeSeguido(userSeguido)
+        res.status(201).json({message: `${userSeguidor.nickName} dejó de seguir a ${userSeguido.nickName}`})
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const obtenerCantidadSeguidoresDeUser = async (req,res) => {
+    try {
+        const id = req.params.id
+        const user = await User.findByPk(id)
+        const cantidad = await user.countSeguidores()
+        res.status(200).json({ cantidad })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const obtenerCantidadSeguidosDeUser = async (req,res) => {
+    try {
+        const id = req.params.id
+        const user = await User.findByPk(id)
+        const cantidad = await user.countSeguidos()
+        res.status(200).json({ cantidad })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+module.exports = {
     obtenerUsers,
     obtenerUser,
     crearUser,
@@ -188,5 +271,11 @@ module. exports = {
     obtenerPostDeUser,
     eliminarPostDeUser,
     crearCommentDePostDeUser,
-    obtenerCommentsDePostDeUser
+    obtenerCommentsDePostDeUser,
+    obtenerSeguidoresDeUser,
+    obtenerSeguidosDeUser,
+    seguirUser,
+    dejarDeSeguirUser,
+    obtenerCantidadSeguidoresDeUser,
+    obtenerCantidadSeguidosDeUser
 }

@@ -6,6 +6,7 @@ const {validarUserExistente, validarUserBody, validarNickNameUnico} = require(".
 const {validarPostBody, validarPostExistente} = require("../middlewares/postMiddleware")
 const {validarBodyComment} = require("../middlewares/commentMiddleware")
 const validarPostPerteneceAUser = require("../middlewares/user-postMiddleware")
+const {validarUserDiferentes, validarUserSigueAUser} = require("../middlewares/user-followersMiddleware")
 
 // CRUD básico
 router.get("/", userController.obtenerUsers)
@@ -62,6 +63,47 @@ router.get("/:userId/posts/:postId/comments",
     validarUserExistente("userId"),
     validarPostExistente("postId"),
     validarPostPerteneceAUser,
-    userController.obtenerCommentsDePostDeUser)
-    
+    userController.obtenerCommentsDePostDeUser) 
+
+// Seguidores y seguidos
+router.get("/:id/followers",
+    validarIdParams("id"),
+    validarUserExistente("id"),
+    userController.obtenerSeguidoresDeUser
+)
+router.get("/:id/followed",
+    validarIdParams("id"),
+    validarUserExistente("id"),
+    userController.obtenerSeguidosDeUser
+)
+
+router.post("/:idSeguidor/follow/:idSeguido",
+    validarIdParams("idSeguidor"),
+    validarIdParams("idSeguido"),
+    validarUserExistente("idSeguidor"),
+    validarUserExistente("idSeguido"),
+    validarUserDiferentes,
+    userController.seguirUser
+) 
+router.delete("/:idSeguidor/unfollow/:idSeguido",
+    validarIdParams("idSeguidor"),
+    validarIdParams("idSeguido"),
+    validarUserExistente("idSeguidor"),
+    validarUserExistente("idSeguido"),
+    validarUserDiferentes,
+    validarUserSigueAUser,
+    userController.dejarDeSeguirUser)
+
+router.get("/:id/followers/count",
+    validarIdParams("id"),
+    validarUserExistente("id"),
+    userController.obtenerCantidadSeguidoresDeUser
+)
+
+router.get("/:id/followed/count",
+    validarIdParams("id"),
+    validarUserExistente("id"),
+    userController.obtenerCantidadSeguidosDeUser
+)
+
 module.exports = router
