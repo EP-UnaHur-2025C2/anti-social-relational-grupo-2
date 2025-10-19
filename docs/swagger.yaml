@@ -1,11 +1,1446 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  title: UnaHur Anti-Social Net
-  version: "1.0.0"
+  title: API Red Anti-Social
+  version: 2.2.2
+  description: CRUD completo para User, Post, Post_Images, Tag y Comment, incluyendo todas las rutas de asociación.
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Servidor de Desarrollo
+
 paths:
-  /:
+  # CRUD BÁSICO DE USER
+  /users:
     get:
-      summary: Ruta de prueba
+      summary: Obtener todos los usuarios
+      tags:
+        - Users
       responses:
         "200":
-          description: prueba
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      summary: Crear un nuevo usuario
+      tags:
+        - Users
+      requestBody:
+        description: Datos del nuevo usuario
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        "201":
+          description: Usuario creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Error de validación de entrada
+        "409":
+          description: El nickName ya existe
+
+  /users/{id}:
+    get:
+      summary: Obtener un usuario por ID
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "404":
+          description: Usuario no encontrado
+
+    put:
+      summary: Actualizar un usuario
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        description: Datos para actualizar usuario
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        "201":
+          description: Usuario actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Error de validación de entrada
+        "404":
+          description: Usuario no encontrado
+        "409":
+          description: El nickName provisto ya está en uso.
+
+    delete:
+      summary: Eliminar un usuario
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Usuario eliminado correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Usuario eliminado correctamente"
+        "404":
+          description: Usuario no encontrado
+
+  # GESTIÓN DE SEGUIDORES/SEGUIDOS
+  /users/{id}/followers:
+    get:
+      summary: Obtener la lista de seguidores de un usuario
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: ID del usuario cuyos seguidores se quieren obtener.
+      responses:
+        "200":
+          description: Lista de seguidores (solo nickName)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserNickName'
+              example:
+                - nickName: usuario_que_sigue_1
+                - nickName: usuario_que_sigue_2
+        "404":
+          description: Usuario no encontrado
+
+  /users/{id}/followed:
+    get:
+      summary: Obtener la lista de usuarios seguidos por un usuario
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: ID del usuario a consultar para ver a quién sigue.
+      responses:
+        "200":
+          description: Lista de usuarios seguidos (solo nickName)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserNickName'
+              example:
+                - nickName: usuario_seguido_1
+                - nickName: usuario_seguido_2
+        "404":
+          description: Usuario no encontrado
+
+  /users/{id}/followers/count:
+    get:
+      summary: Obtener la cantidad total de seguidores de un usuario
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: ID del usuario.
+      responses:
+        "200":
+          description: Cantidad de seguidores.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountResponse'
+              example:
+                cantidad: 15
+        "404":
+          description: Usuario no encontrado
+
+  /users/{id}/followed/count:
+    get:
+      summary: Obtener la cantidad total de usuarios seguidos por un usuario
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: ID del usuario.
+      responses:
+        "200":
+          description: Cantidad de seguidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountResponse'
+              example:
+                cantidad: 20
+        "404":
+          description: Usuario no encontrado
+
+  /users/{idSeguidor}/follow/{idSeguido}:
+    parameters:
+      - name: idSeguidor
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 2
+        description: ID del usuario que inicia la acción de seguir.
+      - name: idSeguido
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 1
+        description: ID del usuario que será seguido.
+
+    post:
+      summary: Seguir a otro usuario
+      tags:
+        - Users
+      responses:
+        "201":
+          description: Asociación de seguimiento creada correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "usuario_seguidor siguió a usuario_seguido"
+        "400":
+          description: El usuario no se puede seguir a sí mismo.
+        "404":
+          description: Usuario Seguidor o Seguido no encontrado.
+        "409":
+          description: El usuario ya está siguiendo a este usuario.
+
+    delete:
+      summary: Dejar de seguir a otro usuario (Unfollow)
+      tags:
+        - Users
+      responses:
+        "201":
+          description: Asociación de seguimiento eliminada correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "usuario_seguidor dejó de seguir a usuario_seguido"
+        "400":
+          description: El usuario no se puede dejar de seguir a sí mismo.
+        "404":
+          description: Usuario Seguidor o Seguido no encontrado.
+        "409":
+          description: El usuario Seguidor no está siguiendo al usuario Seguido.
+
+  # CRUD BÁSICO DE POST
+  /posts:
+    get:
+      summary: Obtener todos los posts
+      tags:
+        - Posts
+      responses:
+        "200":
+          description: Lista de posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserPost'
+    post:
+      summary: Crear un nuevo post
+      tags:
+        - Posts
+      requestBody:
+        description: Datos para crear un nuevo post. Debe incluir el ID del usuario creador.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPostEntrada'
+      responses:
+        "201":
+          description: Post creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPostBase'
+              example:
+                id: 102
+                descripcion: Post recién creado
+                userId: 1
+                createdAt: "2025-10-16T16:00:00.000Z"
+                updatedAt: "2025-10-16T16:00:00.000Z"
+        "400":
+          description: Error de validación (ej. falta userId o descripción)
+
+  /posts/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 101
+        description: ID del post a buscar o modificar.
+
+    get:
+      summary: Obtener un post por ID (solo campos base y timestamps)
+      tags:
+        - Posts
+      responses:
+        "200":
+          description: Post encontrado (sin comentarios ni imágenes).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPostBase'
+        "404":
+          description: Post no encontrado.
+
+    put:
+      summary: Actualizar un post por ID
+      tags:
+        - Posts
+      requestBody:
+        description: Datos para actualizar el post.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPostEntrada'
+      responses:
+        "201":
+          description: Post actualizado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPostBase'
+        "400":
+          description: Error de validación de entrada.
+        "404":
+          description: Post no encontrado.
+
+    delete:
+      summary: Eliminar un post por ID
+      tags:
+        - Posts
+      responses:
+        "200":
+          description: Post eliminado correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "El post fue borrado con exito"
+        "404":
+          description: Post no encontrado.
+
+  # CRUD BÁSICO DE POST_IMAGES
+  /post_images:
+    get:
+      summary: Obtener todas las imágenes registradas
+      tags:
+        - Post_Images
+      responses:
+        "200":
+          description: Lista de todas las imágenes registradas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostImageDetallado'
+    post:
+      summary: Crear una nueva imagen (Requiere url y postId)
+      tags:
+        - Post_Images
+      requestBody:
+        description: Datos de la nueva imagen, debe incluir la URL y el postId.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostImageCreacion'
+      responses:
+        "201":
+          description: Imagen creada correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostImageDetallado'
+        "400":
+          description: Error de validación (ej. URL o postId faltante).
+
+  /post_images/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 50
+        description: ID de la imagen.
+
+    get:
+      summary: Obtener una imagen por ID
+      tags:
+        - Post_Images
+      responses:
+        "200":
+          description: Imagen encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostImageDetallado'
+        "404":
+          description: Imagen no encontrada.
+
+    put:
+      summary: Actualizar una imagen por ID
+      tags:
+        - Post_Images
+      requestBody:
+        description: Datos para actualizar la imagen (url o postId).
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostImageCreacion'
+      responses:
+        "201":
+          description: Imagen actualizada correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostImageDetallado'
+        "400":
+          description: Error de validación.
+        "404":
+          description: Imagen no encontrada.
+
+    delete:
+      summary: Eliminar una imagen por ID
+      tags:
+        - Post_Images
+      responses:
+        "200":
+          description: Imagen eliminada correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Imagen eliminada con exito"
+        "404":
+          description: Imagen no encontrada.
+
+  # CRUD BÁSICO DE TAGS
+  /tags:
+    get:
+      summary: Obtener todos los tags registrados
+      tags:
+        - Tags
+      responses:
+        "200":
+          description: Lista de todos los tags.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TagDetallado'
+    post:
+      summary: Crear un nuevo Tag
+      tags:
+        - Tags
+      requestBody:
+        description: Nombre del nuevo tag.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagCreacion'
+      responses:
+        "201":
+          description: Tag creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagDetallado'
+        "400":
+          description: Error de validación (ej. Nombre faltante).
+        "409":
+          description: El tag ya existe (validarTagUnico).
+
+  /tags/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 5
+        description: ID del tag.
+
+    get:
+      summary: Obtener un Tag por ID
+      tags:
+        - Tags
+      responses:
+        "200":
+          description: Tag encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagDetallado'
+        "404":
+          description: Tag no encontrado.
+
+    put:
+      summary: Actualizar un Tag por ID
+      tags:
+        - Tags
+      requestBody:
+        description: Nombre actualizado del tag.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagCreacion'
+      responses:
+        "200":
+          description: Tag actualizado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagDetallado'
+        "400":
+          description: Error de validación.
+        "404":
+          description: Tag no encontrado.
+        "409":
+          description: El nuevo nombre del tag ya existe.
+
+    delete:
+      summary: Eliminar un Tag por ID
+      tags:
+        - Tags
+      responses:
+        "200":
+          description: Tag eliminado correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Tag eliminada con exito"
+        "404":
+          description: Tag no encontrado.
+
+  # CRUD BÁSICO DE COMMENTS
+  /comments:
+    get:
+      summary: Obtener todos los comentarios registrados
+      tags:
+        - Comments
+      responses:
+        "200":
+          description: Lista de todos los comentarios.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommentDetallado'
+    post:
+      summary: Crear un nuevo comentario
+      tags:
+        - Comments
+      requestBody:
+        description: Contenido del nuevo comentario, debe incluir texto, userId y postId.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreacion'
+      responses:
+        "201":
+          description: Comentario creado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentDetallado'
+        "400":
+          description: Error de validación (ej. falta texto, userId o postId).
+
+  /comments/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 20
+        description: ID del comentario.
+
+    get:
+      summary: Obtener un comentario por ID
+      tags:
+        - Comments
+      responses:
+        "200":
+          description: Comentario encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentDetallado'
+        "404":
+          description: Comentario no encontrado.
+
+    put:
+      summary: Actualizar un comentario por ID
+      tags:
+        - Comments
+      requestBody:
+        description: Datos para actualizar el comentario (texto, userId, postId).
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreacion'
+      responses:
+        "200":
+          description: Comentario actualizado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentDetallado'
+        "400":
+          description: Error de validación.
+        "404":
+          description: Comentario no encontrado.
+
+    delete:
+      summary: Eliminar un comentario por ID
+      tags:
+        - Comments
+      responses:
+        "200":
+          description: Comentario eliminado correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Comentario eliminado con exito"
+        "404":
+          description: Comentario no encontrado.
+
+  # GESTIÓN DE ASOCIACIONES POST/TAGS/IMAGES
+  /posts/{postId}/images:
+    parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 101
+        description: ID del Post al que están asociadas las imágenes.
+
+    get:
+      summary: Obtener todas las URLs de imágenes de un Post
+      tags:
+        - Post_Images
+      responses:
+        "200":
+          description: Lista de URLs de imágenes asociadas al Post.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostImage'
+        "404":
+          description: Post no encontrado.
+
+    post:
+      summary: Asociar una nueva imagen (URL) a un Post
+      tags:
+        - Post_Images
+      requestBody:
+        description: URL de la nueva imagen a asociar.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostImageEntrada'
+      responses:
+        "201":
+          description: Imagen asociada correctamente al Post.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostImageDetallado'
+              example:
+                id: 50
+                url: https://ejemplo.com/imagen_nueva.jpg
+                postId: 101
+                createdAt: "2025-10-16T18:00:00.000Z"
+                updatedAt: "2025-10-16T18:00:00.000Z"
+        "400":
+          description: Error de validación (ej. URL inválida o faltante).
+        "404":
+          description: Post no encontrado.
+
+  /posts/{postId}/images/{imageId}:
+    parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 101
+        description: ID del Post dueño de la imagen.
+      - name: imageId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 50
+        description: ID de la imagen a eliminar.
+
+    delete:
+      summary: Eliminar una imagen específica de un Post
+      tags:
+        - Post_Images
+      responses:
+        "200":
+          description: Imagen desasociada (eliminada) del Post correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "La imagen fue borrada con exito"
+        "404":
+          description: Post o Imagen no encontrados, o la Imagen no pertenece al Post.
+
+  /posts/{postId}/tags:
+    parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 101
+        description: ID del Post al que se asocian los tags.
+
+    get:
+      summary: Obtener los tags asociados a un Post
+      tags:
+        - Post_Tags
+      responses:
+        "200":
+          description: Post con su descripción y lista de tags.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostTagsObtenidos'
+              example:
+                id: 101
+                descripcion: Mi primera publicación
+                userId: 1
+                createdAt: "2025-10-16T15:00:00.000Z"
+                Tags:
+                  - nombre: javascript
+                  - nombre: sequelize
+        "404":
+          description: Post no encontrado.
+
+    post:
+      summary: Asociar un Tag existente a un Post
+      tags:
+        - Post_Tags
+      requestBody:
+        description: ID del Tag a asociar.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagEntrada'
+      responses:
+        "201":
+          description: Tag asociado correctamente al Post.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Tag 5 asociada al post 101"
+        "400":
+          description: Error de validación (ej. ID de Tag faltante).
+        "404":
+          description: Post o Tag no encontrados.
+        "409":
+          description: El Tag ya está asociado a este Post.
+
+  /posts/{postId}/tags/{tagId}:
+    parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 101
+        description: ID del Post.
+      - name: tagId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 5
+        description: ID del Tag a desasociar.
+
+    delete:
+      summary: Eliminar (desasociar) un Tag de un Post
+      tags:
+        - Post_Tags
+      responses:
+        "200":
+          description: Tag desasociado del Post correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Tag 5 desasociado del post 101 correctamente"
+        "404":
+          description: Post o Tag no encontrados, o el Tag no está asociado al Post.
+
+  # ENDPOINTS POSTS ANIDADOS USER
+  /users/{userId}/posts:
+    get:
+      summary: Obtener todos los posts de un usuario
+      tags:
+        - Posts
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: ID del usuario cuyos posts se quieren obtener.
+      responses:
+        "200":
+          description: Lista de posts del usuario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserPost'
+        "404":
+          description: Usuario no encontrado
+
+    post:
+      summary: Crear un nuevo post para un usuario
+      tags:
+        - Posts
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: ID del usuario que crea el post.
+      requestBody:
+        description: Contenido del nuevo post
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPostEntrada'
+      responses:
+        "201":
+          description: Post creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPostBase'
+              example:
+                id: 102
+                descripcion: Post recién creado
+                userId: 1
+                createdAt: "2025-10-16T16:00:00.000Z"
+                updatedAt: "2025-10-16T16:00:00.000Z"
+        "400":
+          description: Error de validación del cuerpo del post
+        "404":
+          description: Usuario no encontrado
+        "409":
+          description: Conflicto (ej. la descripción del post ya existe para este usuario)
+
+  /users/{userId}/posts/{postId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 1
+        description: ID del usuario dueño del post.
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 101
+        description: ID del post específico.
+
+    get:
+      summary: Obtener un post específico de un usuario con detalles (Incluye Comentarios, Imágenes, Tags)
+      tags:
+        - Posts
+      responses:
+        "200":
+          description: Post encontrado exitosamente con comentarios, imágenes y tags.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPostDetallado'
+              example:
+                id: 101
+                descripcion: Mi primera publicación
+                userId: 1
+                createdAt: "2025-10-16T15:00:00.000Z"
+                Comments:
+                  - texto: ¡Gran post!
+                    createdAt: "2025-10-16T15:05:00.000Z"
+                Post_Images:
+                  - url: https://ejemplo.com/imagen1.jpg
+                Tags:
+                  - nombre: javascript
+        "404":
+          description: Usuario o Post no encontrado, o el Post no pertenece al Usuario.
+
+    delete:
+      summary: Eliminar un post específico de un usuario
+      tags:
+        - Posts
+      responses:
+        "200":
+          description: Post eliminado correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Usuario eliminado correctamente"
+        "404":
+          description: Usuario o Post no encontrado, o el Post no pertenece al Usuario.
+
+  /users/{userId}/posts/{postId}/comments:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 1
+        description: ID del usuario dueño del post.
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 101
+        description: ID del post.
+
+    get:
+      summary: Obtener los comentarios visibles de un post de un usuario
+      tags:
+        - Comments
+      responses:
+        "200":
+          description: Lista de comentarios del post.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        "404":
+          description: Usuario o Post no encontrado, o el Post no pertenece al Usuario.
+
+    post:
+      summary: Crear un nuevo comentario en un post de un usuario
+      tags:
+        - Comments
+      requestBody:
+        description: Datos del nuevo comentario (solo requiere 'texto' ya que 'userId' y 'postId' van en el path).
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreacionPath'
+      responses:
+        "201":
+          description: Comentario creado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentDetallado'
+              example:
+                id: 25
+                texto: Este es un nuevo comentario.
+                userId: 1
+                postId: 101
+                createdAt: "2025-10-16T23:30:00.000Z"
+                updatedAt: "2025-10-16T23:30:00.000Z"
+        "400":
+          description: Error de validación (ej. falta texto).
+        "404":
+          description: Usuario o Post no encontrado.
+
+components:
+  schemas:
+    # ESQUEMAS DE USER
+    User:
+      type: object
+      required:
+        - id
+        - nickName
+      properties:
+        id:
+          type: integer
+          description: Identificador único del usuario.
+          readOnly: true
+          example: 1
+        nickName:
+          type: string
+          minLength: 3
+          maxLength: 20
+          description: Nombre de usuario único.
+          example: prueba_1
+
+    UserInput:
+      type: object
+      required:
+        - nickName
+      properties:
+        nickName:
+          type: string
+          minLength: 3
+          maxLength: 20
+          description: Nombre de usuario a crear o actualizar.
+          example: nuevo_usuario
+
+    UserNickName:
+      type: object
+      required:
+        - nickName
+      properties:
+        nickName:
+          type: string
+          description: Nombre de usuario.
+          example: otro_usuario
+
+    CountResponse:
+      type: object
+      required:
+        - cantidad
+      properties:
+        cantidad:
+          type: integer
+          description: Número total de elementos.
+          example: 15
+
+    # ESQUEMAS DE POST (BASE)
+    UserPost:
+      type: object
+      required:
+        - id
+        - descripcion
+        - userId
+      properties:
+        id:
+          type: integer
+          description: Identificador único del post.
+          readOnly: true
+          example: 101
+        descripcion:
+          type: string
+          maxLength: 20
+          description: Contenido breve del post.
+          example: Mi primera publicación
+        userId:
+          type: integer
+          description: ID del usuario que creó el post.
+          readOnly: true
+          example: 1
+
+    UserPostBase:
+      allOf:
+        - $ref: '#/components/schemas/UserPost'
+        - type: object
+          properties:
+            createdAt:
+              type: string
+              format: date-time
+              description: Fecha de creación del post.
+              example: 2025-10-16T15:00:00.000Z
+            updatedAt:
+              type: string
+              format: date-time
+              description: Última fecha de actualización del post.
+              example: 2025-10-16T15:00:00.000Z
+
+    UserPostDetallado:
+      allOf:
+        - $ref: '#/components/schemas/UserPost'
+        - type: object
+          properties:
+            createdAt:
+              type: string
+              format: date-time
+              description: Fecha de creación del post.
+              example: 2025-10-16T15:00:00.000Z
+            Comments:
+              type: array
+              description: Lista de comentarios visibles del post.
+              items:
+                $ref: '#/components/schemas/Comment'
+            Post_Images:
+              type: array
+              description: Lista de URLs de imágenes asociadas al post.
+              items:
+                $ref: '#/components/schemas/PostImage'
+            Tags:
+              type: array
+              description: Lista de tags (etiquetas) asociadas al post.
+              items:
+                $ref: '#/components/schemas/Tag'
+
+    UserPostEntrada:
+      type: object
+      required:
+        - descripcion
+        - userId
+      properties:
+        descripcion:
+          type: string
+          maxLength: 20
+          description: Contenido del post.
+          example: Contenido breve aquí
+        userId:
+          type: integer
+          description: ID del usuario que crea el post.
+          example: 1
+
+    # ESQUEMAS DE INCLUDES/ASOCIACIONES (Comments, Images, Tags)
+    CommentDetallado:
+      type: object
+      required:
+        - id
+        - texto
+        - userId
+        - postId
+      properties:
+        id:
+          type: integer
+          description: ID único del comentario.
+          readOnly: true
+          example: 20
+        texto:
+          type: string
+          description: Contenido del comentario.
+          example: ¡Gran post!
+        userId:
+          type: integer
+          description: ID del usuario que creó el comentario.
+          example: 1
+        postId:
+          type: integer
+          description: ID del post al que pertenece el comentario.
+          example: 101
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creación del comentario.
+          example: 2025-10-16T15:05:00.000Z
+        updatedAt:
+          type: string
+          format: date-time
+          description: Última fecha de actualización.
+          example: 2025-10-16T15:05:00.000Z
+
+    CommentCreacion:
+      type: object
+      required:
+        - texto
+        - userId
+        - postId
+      properties:
+        texto:
+          type: string
+          description: Contenido del comentario.
+          example: Me encanta este tema.
+        userId:
+          type: integer
+          description: ID del usuario que crea el comentario.
+          example: 1
+        postId:
+          type: integer
+          description: ID del post al que se refiere el comentario.
+          example: 101
+
+    CommentCreacionPath:
+      type: object
+      required:
+        - texto
+      properties:
+        texto:
+          type: string
+          description: Contenido del comentario.
+          example: ¡Comentario creado desde ruta anidada!
+
+    Comment:
+      type: object
+      properties:
+        texto:
+          type: string
+          description: Contenido del comentario.
+          example: ¡Gran post!
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creación del comentario.
+          example: 2025-10-16T15:05:00.000Z
+
+    PostImage:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          description: URL de la imagen del post.
+          example: https://ejemplo.com/imagen1.jpg
+
+    PostImageDetallado:
+      type: object
+      required:
+        - id
+        - url
+        - postId
+      properties:
+        id:
+          type: integer
+          description: ID único de la imagen.
+          example: 50
+        url:
+          type: string
+          format: uri
+          description: URL de la imagen del post.
+          example: https://ejemplo.com/imagen1.jpg
+        postId:
+          type: integer
+          description: ID del post asociado.
+          example: 101
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creación del registro.
+          example: 2025-10-16T18:00:00.000Z
+        updatedAt:
+          type: string
+          format: date-time
+          description: Última fecha de actualización del registro.
+          example: 2025-10-16T18:00:00.000Z
+
+    PostImageCreacion:
+      type: object
+      required:
+        - url
+        - postId
+      properties:
+        url:
+          type: string
+          format: uri
+          description: URL de la imagen a guardar.
+          example: https://ejemplo.com/otra_foto.jpg
+        postId:
+          type: integer
+          description: ID del post al que pertenece esta imagen.
+          example: 101
+
+    PostImageEntrada:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+          description: URL de la imagen a guardar.
+          example: https://ejemplo.com/nueva_foto.jpg
+
+    # ESQUEMAS DE TAGS 
+    TagDetallado:
+      type: object
+      required:
+        - id
+        - nombre
+      properties:
+        id:
+          type: integer
+          description: ID único del tag.
+          readOnly: true
+          example: 5
+        nombre:
+          type: string
+          description: Nombre del tag.
+          example: javascript
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creación.
+          example: 2025-10-16T18:00:00.000Z
+        updatedAt:
+          type: string
+          format: date-time
+          description: Última fecha de actualización.
+          example: 2025-10-16T18:00:00.000Z
+
+    TagCreacion:
+      type: object
+      required:
+        - nombre
+      properties:
+        nombre:
+          type: string
+          description: Nombre del tag a crear o actualizar.
+          example: nuevoskill
+
+    Tag:
+      type: object
+      properties:
+        nombre:
+          type: string
+          description: Nombre del tag.
+          example: javascript
+
+    TagNombre:
+      type: object
+      properties:
+        nombre:
+          type: string
+          description: Nombre del tag.
+          example: javascript
+
+    TagEntrada:
+      type: object
+      required:
+        - tagId
+      properties:
+        tagId:
+          type: integer
+          description: ID del tag existente a asociar.
+          example: 5
+
+    PostTagsObtenidos:
+      allOf:
+        - $ref: '#/components/schemas/UserPost'
+        - type: object
+          properties:
+            createdAt:
+              type: string
+              format: date-time
+              description: Fecha de creación del post.
+              example: 2025-10-16T15:00:00.000Z
+            Tags:
+              type: array
+              description: Lista de tags asociados al post.
+              items:
+                $ref: '#/components/schemas/TagNombre'
