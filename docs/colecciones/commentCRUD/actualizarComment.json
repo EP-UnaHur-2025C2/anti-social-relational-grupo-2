@@ -1,0 +1,22 @@
+[
+    {
+        "texto": "Comentario 1 actualizado",
+        "userId": "1",
+        "postId": "2"
+    },
+    {
+        "texto": "Comentario 2 actualizado",
+        "userId": "2",
+        "postId": "1"
+    },
+    {
+        "texto": "Comentario 3 actualizado",
+        "userId": "3",
+        "postId": "3"
+    },
+    {
+        "texto": "Comentario 4 actualizado",
+        "userId": "1",
+        "postId": "2"
+    }
+]
