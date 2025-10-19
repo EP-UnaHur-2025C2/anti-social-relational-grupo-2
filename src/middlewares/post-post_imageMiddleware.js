@@ -10,7 +10,7 @@ const validarImagePerteneceAPost = async (req,res,next) => {
         }
     })
     if (!imagePost) {
-        return res.status(404).json({ message:`La imagen con id ${imageId} no pertenece al post ${postId} o no existe.`})
+        return res.status(404).json({ message:`La imagen con id ${imageId} no pertenece al post ${postId}`})
     }
     next()
 }
