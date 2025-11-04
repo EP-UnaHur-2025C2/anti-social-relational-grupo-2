@@ -5,7 +5,7 @@ const {validarIdParams} = require("../middlewares/genericMiddleware")
 const {validarPostExistente, validarPostBody} = require("../middlewares/postMiddleware")
 const {validarExisteUserIdBody} = require("../middlewares/userMiddleware")
 const {validarBodyImage, validarImageExistente} = require("../middlewares/post_imagesMiddleware")
-const validarImagePerteneceAPost = require("../middlewares/post-post_ImageMiddleware")
+const validarImagePerteneceAPost = require("../middlewares/post-post_imageMiddleware")
 const {validarTagIdEnBody, validarTagExistente, validarIdBodyTag} = require("../middlewares/tagMiddleware")
 const validarTagAsociadoAPost = require("../middlewares/post-tagMiddleware")
 
