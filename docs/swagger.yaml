@@ -5,7 +5,7 @@ info:
   description: CRUD completo para User, Post, Post_Images, Tag y Comment, incluyendo todas las rutas de asociación.
 
 servers:
-  - url: http://localhost:3000/api/v1
+  - url: /
     description: Servidor de Desarrollo
 
 paths:

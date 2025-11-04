@@ -24,6 +24,6 @@ app.use("/tags", tagRouter)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 app.listen(PORT, async () => {
-    await db.sequelize.sync({})
+    await db.sequelize.sync({force:false})
     console.log(`El servidor esta corriendo en el puerto ${PORT}`)
 })

@@ -130,7 +130,7 @@ Esta sección detalla los pasos necesarios para configurar y ejecutar el proyect
 3.  **Configurar variables de entorno:**
     Crear un archivo llamado `.env` en la raíz del proyecto para definir las configuraciones.
 
-    **Ejemplo de configuración (usando SQLite por defecto):**
+    **Configuración por defecto:**
 
     ```env
     # Configuración del Servidor
@@ -142,11 +142,13 @@ Esta sección detalla los pasos necesarios para configurar y ejecutar el proyect
     
     # Configuración de la Base de Datos (para Sequelize)
     # Ejemplo usando SQLite:
-    DB_DIALECT=sqlite
-    DB_STORAGE=. data/data.db
+    DB_USER = root
+    DB_NAME = database_development
+    DB_STORAGE = data/data.db
+    DB_DIALECT = sqlite 
     ```
 
-    *Nota: Si se cambia el `DB_Dialect`, se deben configurar las variables de conexión (`DB_User`, `DB_Password`, `DB_Name`) necesarias para ese motor de base de datos.*
+    *Nota: Si se cambia el `DB_DIALECT`, se deben configurar las variables de conexión (`DB_USER`, `DB_PASSWORD`, `DB_NAME`) necesarias para ese motor de base de datos.*
 
 4.  **Ejecutar el servidor:**
 
